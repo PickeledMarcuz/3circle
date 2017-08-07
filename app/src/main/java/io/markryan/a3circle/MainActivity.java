@@ -33,8 +33,8 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity {
 
     // the foursquare client_id and the client_secret
-    private static final String CLIENT_ID = "CYEMKOM4OLTP5PHMOFVUJJAMWT5CH5G1JBCYREATW21XLLSZ";
-    private static final String CLIENT_SECRET = "GYNP4URASNYRNRGXR5UEN2TGTKJHXY5FGSAXTIHXEUG1GYM2";
+    private static final String CLIENT_ID = "";
+    private static final String CLIENT_SECRET = "";
     private static String userQuery;
 
     private String TAG = MainActivity.class.getSimpleName();
