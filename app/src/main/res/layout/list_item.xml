@@ -38,10 +38,12 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/name"
+        android:fontFamily="monospace"
         android:paddingBottom="8dp"
         android:textAlignment="textEnd"
         android:textAllCaps="true"
-        android:textColor="@color/colorAccent" />
+        android:textColor="?attr/colorControlNormal"
+        android:textSize="18sp" />
 
 
 </RelativeLayout>
