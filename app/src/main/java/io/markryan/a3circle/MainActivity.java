@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -18,6 +19,12 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 userQuery = String.valueOf(userInput.getText());
                 updatedURL = updatedURL + userQuery;
 
-                //new GetContent().execute();
+                new GetContent().execute();
 
             }
 
@@ -155,7 +162,91 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
     }
 
+    // Calls for the background task
+    private class GetContent extends AsyncTask<String, Void, String> {
+
+
+        @Override
+        protected String doInBackground(String... arg0) {
+            HttpHandler httpHandler = new HttpHandler();
+
+            // Making a request to url and getting response
+            String response;
+            if (currentLocation == lastKnownLocation) {
+                response = httpHandler.makeServiceCall(url + userQuery);
+            } else {
+                response = httpHandler.makeServiceCall(url + userQuery);
+
+            }
+
+
+            Log.e(TAG, "Response from url: " + response);
+
+            if (response != null) {
+                try {
+
+                    JSONObject jsonObj = new JSONObject(response);
+                    // Getting JSON Array node
+                    JSONArray venues = jsonObj.getJSONObject("response").getJSONArray("venues");
+                    // looping through All Contacts
+                    for (int i = 0; i < venues.length(); i++) {
+                        JSONObject c = venues.getJSONObject(i);
+
+                        String name = c.getString("name");
+                        String address = c.getJSONObject("location").getString("address");
+                        Double distance = c.getJSONObject("location").getDouble("distance") / 10;
+
+                        // tmp hash map for single contact
+                        HashMap<String, String> venue = new HashMap<>();
+
+                        // adding each child node to HashMap key => value
+                        venue.put("name", name);
+                        venue.put("address", address);
+                        venue.put("distance", distance.toString() + "M's");
+
+                        // adding contact to contact list
+                        venuesList.add(venue);
+                    }
+
+                } catch (final JSONException e) {
+                    Log.e(TAG, "Json parsing error: " + e.getMessage());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Json parsing error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                }
+            } else {
+                Log.e(TAG, "Couldn't get json from server.");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                "Couldn't get json from server. Check LogCat for possible errors!",
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            // After JSON is parsed into venuesList it is then displayed in the ListView.
+            adapter = new SimpleAdapter(MainActivity.this, venuesList, R.layout.list_item, new String[]{"name", "address", "distance"}, new int[]{R.id.name, R.id.address, R.id.distance});
+            listView.setAdapter(adapter);
+
+        }
+
+    }
 }
+
